@@ -1,0 +1,288 @@
+Turn an LED on and off. #include <ESP8266WiFi.h>
+#include <ESP8266WebServer.h>
+#include <OneWire.h>
+#include <DallasTemperature.h>
+
+
+/* Put your SSID & Password */
+const char* ssid = "HOME AUTOMATION SYSTEM";  // Enter SSID here
+const char* password = "12345678";  //Enter Password here
+
+/* Put IP Address details */
+IPAddress local_ip(192,168,1,1);
+IPAddress gateway(192,168,1,1);
+IPAddress subnet(255,255,255,0);
+
+ESP8266WebServer server(80);
+
+double temp = 0.0;
+
+
+// Data wire is plugged into digital pin 2 on the Arduino
+#define ONE_WIRE_BUS D0
+
+// Setup a oneWire instance to communicate with any OneWire device
+OneWire oneWire(ONE_WIRE_BUS);	
+
+// Pass oneWire reference to DallasTemperature library
+DallasTemperature sensors(&oneWire);
+
+
+uint8_t fanPin = D1;
+bool fanStatus = LOW;
+
+uint8_t socketPin = D2;
+bool socketStatus = LOW;
+
+uint8_t bulbPin = D3;
+bool bulbStatus = LOW;
+
+uint8_t acPin = D4;
+bool acStatus = LOW;
+
+uint8_t pumpPin = D5;
+bool pumpStatus = LOW;
+
+
+uint8_t buzzerPin = 21;
+
+
+uint8_t pirPin = D6;
+
+uint8_t ldrPin = A0;
+
+
+
+void handle_OnConnect();
+void toggleBuzzer();
+String SendHTML(uint8_t fanStatus,uint8_t socketStatus,uint8_t bulbStatus,uint8_t acStatus,uint8_t pumpStatus);
+
+
+void turnOnFan() {
+  fanStatus = HIGH;
+  server.send(200, "text/html", SendHTML(true,socketStatus,bulbStatus,acStatus,pumpStatus)); 
+}
+
+void turnOffFan() {
+  fanStatus = LOW;
+  server.send(200, "text/html", SendHTML(false,socketStatus,bulbStatus,acStatus,pumpStatus)); 
+}
+
+void turnOnSocket() {
+  socketStatus = HIGH;
+  server.send(200, "text/html", SendHTML(fanStatus,true,bulbStatus,acStatus,pumpStatus)); 
+}
+
+void turnOffSocket() {
+  socketStatus = LOW;
+  server.send(200, "text/html", SendHTML(fanStatus,false,bulbStatus,acStatus,pumpStatus)); 
+}
+
+void turnOnBulb() {
+  bulbStatus = HIGH;
+  server.send(200, "text/html", SendHTML(fanStatus,socketStatus,true,acStatus,pumpStatus)); 
+}
+
+void turnOffBulb() {
+  bulbStatus = LOW;
+  server.send(200, "text/html", SendHTML(fanStatus,socketStatus,false,acStatus,pumpStatus)); 
+}
+
+void turnOnAc() {
+  acStatus = HIGH;
+  server.send(200, "text/html", SendHTML(fanStatus,socketStatus,bulbStatus,true,pumpStatus)); 
+}
+
+void turnOffAc() {
+  acStatus = LOW;
+  server.send(200, "text/html", SendHTML(fanStatus,socketStatus,bulbStatus,false,pumpStatus)); 
+}
+
+void turnOnPump() {
+  pumpStatus = HIGH;
+  server.send(200, "text/html", SendHTML(fanStatus,socketStatus,bulbStatus,acStatus,true)); 
+}
+
+void turnOffPump() {
+  pumpStatus = LOW;
+  server.send(200, "text/html", SendHTML(fanStatus,socketStatus,bulbStatus,acStatus,false)); 
+}
+
+
+String SendHTML(uint8_t fanStatus,uint8_t socketStatus,uint8_t bulbStatus,uint8_t acStatus,uint8_t pumpStatus){
+  String ptr = "<!DOCTYPE html> <html>\n";
+  ptr +="<head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0, user-scalable=no\">\n";
+  ptr +="<title>HOME AUTOMATION SYSTEM</title>\n";
+  ptr +="<style>html { font-family: Helvetica; display: inline-block; margin: 0px auto; text-align: center;}\n";
+  ptr +="body{margin-top: 50px;} h1 {color: #444444;margin: 50px auto 30px;} h3 {color: #444444;margin-bottom: 50px;}\n";
+  ptr +=".button {display: block;width: 80px;background-color: #3498db;border: none;color: white;padding: 13px 30px;text-decoration: none;font-size: 25px;margin: 0px auto 35px;cursor: pointer;border-radius: 4px;}\n";
+  ptr +=".button-on {background-color: #3498db;}\n";
+  ptr +=".button-on:active {background-color: #2980b9;}\n";
+  ptr +=".button-off {background-color: #34495e;}\n";
+  ptr +=".button-off:active {background-color: #2c3e50;}\n";
+  ptr +="p {font-size: 14px;color: #888;margin-bottom: 10px;}\n";
+  ptr +="</style>\n";
+  ptr +="</head>\n";
+  ptr +="<body>\n";
+  ptr +="<h1>SMART</h1>\n";
+  ptr +="<h2>HOME AUTOMATION SYSTEM</h2>\n";
+
+ 
+   if(fanStatus)
+  {ptr +="<p>FAN Status : ON</p><a class=\"button button-off\" href=\"/fanoff\">OFF</a>\n";}
+  else
+  {ptr +="<p>FAN Status: OFF</p><a class=\"button button-on\" href=\"/fanon\">ON</a>\n";}
+
+  if(socketStatus)
+  {ptr +="<p>Socket Status: ON</p><a class=\"button button-off\" href=\"/socketoff\">OFF</a>\n";}
+  else
+  {ptr +="<p>Socket Status: OFF</p><a class=\"button button-on\" href=\"/socketon\">ON</a>\n";}
+
+  if(bulbStatus)
+  {ptr +="<p>Bulb Status : ON</p><a class=\"button button-off\" href=\"/bulboff\">OFF</a>\n";}
+  else
+  {ptr +="<p>Bulb Status: OFF</p><a class=\"button button-on\" href=\"/bulbon\">ON</a>\n";}
+
+  if(acStatus)
+  {ptr +="<p>AC Status: ON</p><a class=\"button button-off\" href=\"/acoff\">OFF</a>\n";}
+  else
+  {ptr +="<p>AC Status: OFF</p><a class=\"button button-on\" href=\"/acon\">ON</a>\n";}
+
+
+   if(pumpStatus)
+  {ptr +="<p>Pump Status: ON</p><a class=\"button button-off\" href=\"/pumpoff\">OFF</a>\n";}
+  else
+  {ptr +="<p>Pump Status: OFF</p><a class=\"button button-on\" href=\"/pumpon\">ON</a>\n";}
+
+
+  ptr +="</body>\n";
+  ptr +="</html>\n";
+  return ptr;
+}
+
+void handle_OnConnect() {
+  fanStatus = LOW;
+  socketStatus = LOW;
+  bulbStatus = LOW;
+  acStatus = LOW;
+  pumpStatus = LOW;
+
+  toggleBuzzer();
+  server.send(200, "text/html", SendHTML(fanStatus,socketStatus,bulbStatus,acStatus,pumpStatus)); 
+}
+
+
+void toggleBuzzer(){
+
+       digitalWrite(buzzerPin, HIGH);
+       delay(500);
+       digitalWrite(buzzerPin, LOW);
+       delay(500);
+
+}
+
+void loop() {
+  sensors.requestTemperatures(); 
+  temp = sensors.getTempCByIndex(0);
+
+
+  //print the temperature in Celsius
+  Serial.print("LDR RESULT: ");
+  Serial.print(analogRead(ldrPin));
+  Serial.println(" |  ");
+
+
+  //print the temperature in Celsius
+  Serial.print("Temperature RESULT: ");
+  Serial.print(temp);
+  Serial.print((char)176);//shows degrees character
+  Serial.println("C  |  ");
+
+
+    //print the temperature in Celsius
+  Serial.print("IR RESULT: ");
+  Serial.print(digitalRead(pirPin));
+  Serial.println(" |  ");
+
+  server.handleClient();
+  
+
+  if(temp>31){
+       fanStatus = HIGH;
+       digitalWrite(fanPin, HIGH);
+  }
+  if(digitalRead(pirPin)==0){
+       bulbStatus = HIGH;
+       digitalWrite(bulbPin, HIGH);
+  }
+  if(fanStatus)
+  {digitalWrite(fanPin, HIGH);}
+  else
+  {digitalWrite(fanPin, LOW);}
+  
+  if(socketStatus)
+  {digitalWrite(socketPin, HIGH);}
+  else
+  {digitalWrite(socketPin, LOW);}
+
+  if(bulbStatus)
+  {digitalWrite(bulbPin, HIGH);}
+  else
+  {digitalWrite(bulbPin, LOW);}
+  
+  if(acStatus)
+  {digitalWrite(acPin, HIGH);}
+  else
+  {digitalWrite(acPin, LOW);}
+
+   if(pumpStatus)
+  {digitalWrite(pumpPin, HIGH);}
+  else
+  {digitalWrite(pumpPin, LOW);}
+  
+
+}
+
+void setup() {
+  sensors.begin();	// Start up the library
+  Serial.begin(9600);
+  pinMode(fanPin, OUTPUT);
+  pinMode(socketPin, OUTPUT);
+   pinMode(bulbPin, OUTPUT);
+  pinMode(acPin, OUTPUT);
+  pinMode(pumpPin, OUTPUT);
+  pinMode(buzzerPin, OUTPUT);
+  pinMode(pirPin, INPUT);
+  pinMode(ldrPin, INPUT);
+  digitalWrite(buzzerPin, LOW);
+  digitalWrite(fanPin, LOW);
+  digitalWrite(socketPin, LOW);
+  digitalWrite(bulbPin, LOW);
+  digitalWrite(acPin, LOW);
+  digitalWrite(pumpPin, LOW);
+
+
+  delay(100);
+  
+  server.on("/", handle_OnConnect);
+  server.on("/fanon", turnOnFan);
+  server.on("/fanoff", turnOffFan);
+  server.on("/socketon", turnOnSocket);
+  server.on("/socketoff", turnOffSocket);
+  server.on("/bulbon", turnOnBulb);
+  server.on("/bulboff", turnOffBulb);
+  server.on("/acon", turnOnAc);
+  server.on("/acoff", turnOffAc);
+  server.on("/pumpon", turnOnPump);
+  server.on("/pumpoff", turnOffPump);
+  server.onNotFound(handle_NotFound);
+  
+  server.begin();
+
+
+}
+
+
+void handle_NotFound(){
+  server.send(404, "text/plain", "Not found");
+}
