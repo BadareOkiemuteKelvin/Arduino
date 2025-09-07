@@ -3,17 +3,17 @@
 
 LiquidCrystal_I2C lcd(0x27,20,4);  // set the LCD address to 0x3F for a 16 chars and 2 line display
 
-#define BLYNK_TEMPLATE_ID "TMPL2rm0sr7ha"
-#define BLYNK_TEMPLATE_NAME "VIBRATION"
-#define BLYNK_AUTH_TOKEN "8vaTc8K_TUIjK773itcL71uTXJRr27ea"
+#define BLYNK_TEMPLATE_ID "TMPL2_Fi6TW7E"
+#define BLYNK_TEMPLATE_NAME "MSCIOTPROJECT"
+#define BLYNK_AUTH_TOKEN "5v3BjjmMHZeQ-G79y2OcV3BTGPAug8j5"
 
 
 
 #include <ESP8266WiFi.h>
 #include <BlynkSimpleEsp8266.h>
 
-char ssid[] = "Home.js";         // WiFi Name
-char pass[] = "cugzyp-7tejku-kuGhab2";     // WiFi Password
+char ssid[] = "MSCIOTPROJECT";         // WiFi Name
+char pass[] = "MSCIOTPROJECT";     // WiFi Password
 
 const int  SENSOR  = A0; 
 
@@ -66,10 +66,10 @@ void App() {
     }else{
         
     }
-   // ADULTERATION();
+   ADULTERATION();
 
-    int vibration = analogRead(SENSOR);  // Convert to percentage
-    Blynk.virtualWrite(V0, vibration); 
+    //int vibration = analogRead(SENSOR);  // Convert to percentage
+    //Blynk.virtualWrite(V0, vibration); 
     //lcd.setCursor(2,0);   //Set cursor to character 2 on line 0
     //lcd.print(vibration);
 
@@ -96,14 +96,14 @@ void setup() {
  SampleRate = EEPROM.read(0);
  SampleTime = EEPROM.read(1);
   Welcome();
-  //printf(0,0,"CONNECTING TO SERVER");
-  //printf(1,0,"PLEASE WAIT....");
- // Blynk.begin(BLYNK_AUTH_TOKEN, ssid, pass);
- // timer.setInterval(1000, App);  // Check level every 1 second
+  printf(0,0,"CONNECTING TO SERVER");
+   printf(1,0,"PLEASE WAIT....");
+   Blynk.begin(BLYNK_AUTH_TOKEN, ssid, pass);
+   timer.setInterval(1000, App);  // Check level every 1 second
 }
 
 void loop() {
-  //Blynk.run();
-  //timer.run();
-  ADULTERATION();
+  Blynk.run();
+  timer.run();
+  
 }

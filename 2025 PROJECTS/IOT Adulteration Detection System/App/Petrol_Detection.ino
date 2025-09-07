@@ -30,6 +30,8 @@ void Petrol(void)
   {
     LPGSampleSummation = LPGSampleSummation + LPGSample[i];
     METHANESampleSummation = METHANESampleSummation + METHANESample[i];
+    Blynk.virtualWrite(V0,METHANESampleMean); 
+    Blynk.virtualWrite(V3,LPGSampleSummation); 
   }
   LPGSampleMean = LPGSampleSummation/SampleRate;
   METHANESampleMean = METHANESampleSummation/SampleRate;
@@ -41,6 +43,8 @@ void Petrol(void)
   printf(2,0,"LPG:");
   printf(2,4,LPGSampleMean);
   printf(2,8,"PPM");
+  Blynk.virtualWrite(V0,METHANESampleMean); 
+
   i = 0;
  delay(5000);
   cls();
@@ -49,6 +53,7 @@ void Petrol(void)
    printf(0,7,"RESULT");
    printf(1,5,"Pure Petrol");
    printf(2,7,"Detected");
+   Blynk.virtualWrite(V2,(METHANESampleMean * 255)/5000); 
    delay(5000);
   }else
   {
@@ -56,7 +61,10 @@ void Petrol(void)
    printf(1,0,"Adulterated Petrol");
    printf(2,6,"Detected");
    printf(3,5,"Sending SMS...");
+   Blynk.virtualWrite(V1,1); 
+   Blynk.virtualWrite(V2,(METHANESampleMean * 255)/5000); 
    delay(5000);
+
   }
   Menu_index = 1;
 }
